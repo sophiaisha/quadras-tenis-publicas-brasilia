@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quadras de Tênis em Brasília</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
+    header { background: #0e3c78; color: white; padding: 1em; text-align: center; }
+    #map { height: 400px; }
+    .quadra-lista { padding: 1em; max-width: 900px; margin: auto; }
+    .quadra {
+      background: white;
+      border: 1px solid #ccc;
+      margin-bottom: 1em;
+      padding: 1em;
+      border-radius: 8px;
+      display: flex;
+      gap: 1em;
+      align-items: center;
+    }
+    .quadra img {
+      width: 200px;
+      height: 130px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .quadra-info {
+      flex-grow: 1;
+    }
+    .quadra-info h3 {
+      margin: 0 0 0.3em 0;
+      color: #0e3c78;
+    }
+    .quadra-info p {
+      margin: 0.2em 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Quadras públicas de Tênis em Brasília</h1>
+  <p>Encontre quadras em boas condições em Brasília</p>
+</header>
+
+<div id="map"></div>
+
+<section class="quadra-lista">
+  <h2>Quadras Encontradas</h2>
+
+  <!--
+    Aqui você adiciona suas quadras. Para cada quadra:
+    - Altere nome, endereço, foto (URL) e avaliação.
+    - Atenção: atualize também as coordenadas no script abaixo para que o mapa mostre os marcadores corretamente.
+  -->
+
+  <div class="quadra">
+    <img src="data:image/jpeg;base64,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">
+    <alt="Parque Burle Marx - Noroeste">
+    <div class="quadra-info">
+      <h3>Parque Burle Marx - Noroeste</h3>
+      <p><strong>Endereço:</strong>Noroeste W7, Brasília - DF, 70655-775</p>
+      <p><strong>Conservação:</strong>Ótima</p>
+      <p><strong>Informações:</strong>Banheiros próximos, bebedouro na entrada do parque e iluminação. 
+     <p><strong>Tpo de Quadra:</strong>Rápida </p>
+     <a href="https://www.google.com/maps/place/%C3%81rea+de+Lazer+do+Parque+Burle+Marx/@-15.7524534,-47.9101639,1055m/data=!3m2!1e3!4b1!4m6!3m5!1s0x935a3ba5c91cc765:0xc771f71671ea201f!8m2!3d-15.7524586!4d-47.907589!16s%2Fg%2F11s4y4tw_j?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+
+    </div>
+  </div>
+
+  <div class="quadra">
+    <img src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4nq9bnADWhVPgPBiqMFYEXjONMHhdoIFtR6y97IqLzPFYaxzsv6G5p8khI2U9S1Bmm4I56XuU4YNMYMLj3WUhzpP9nSvTHF87BYz8IzzgHoa2OZUVfGCVD9EkiOASRji35fjmVNbhw=s680-w680-h510-rw" alt="Praça do Tenista - Lago Sul">
+    <div class="quadra-info">
+      <h3>Praça do Tenista - Lago Sul</h3>
+      <p><strong>Endereço:</strong> St. de Habitações Individuais Sul QI 13 Ae - Lago Sul, Brasília - DF, 71635-013</p>
+      <p><strong>Conservação:</strong> Ótima</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Pra%C3%A7a+do+Tenista+%E2%80%A2+Lago+Sul+%E2%80%A2+Bras%C3%ADlia/@-15.8443498,-47.8805415,1055m/data=!3m2!1e3!4b1!4m6!3m5!1s0x935a24e34d66520d:0x69154e782acfd289!8m2!3d-15.844355!4d-47.8779666!16s%2Fg%2F1ptyn6p8q?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+  </div>
+
+  <div class="quadra">
+    <img src="https://i.imgur.com/mybWguB.png" alt="Quadra Lago sul EQL">
+    <div class="quadra-info">
+      <h3>Quadra Tênis EQL 6/8 - Lago Sul</h3>
+      <p><strong>Endereço:</strong>St. de Habitações Individuais Sul QI 8 - Lago Sul, Brasília - DF, 70200-001</p>
+      <p><strong>Conservação:</strong> Boa</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Quadra+de+T%C3%AAnis+EQL+6%2F8/@-15.8417647,-47.8978686,1055m/data=!3m2!1e3!4b1!4m6!3m5!1s0x935a250062068839:0xbd34f151d67f4667!8m2!3d-15.8417699!4d-47.8952937!16s%2Fg%2F11ybd3pcwt?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+  </div>
+
+  <div class="quadra">
+    <img src="data:image/jpeg;base64,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" alt="Parque da cidade">
+    <div class="quadra-info">
+      <h3>Parque da cidade</h3>
+      <p><strong>Endereço:</strong>Srps - Brasília, DF, 70655-775</p>
+      <p><strong>Conservação:</strong>Boa</p>
+      <p><strong>Informações:</strong> Para o acesso as quadras há o estacionamento 5 do parque da cidade.</p>
+      <p> • Tem banheiro próximos das quadras.</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Quadras+de+T%C3%AAnis+do+Parque/@-15.8097999,-47.9252041,1055m/data=!3m1!1e3!4m10!1m2!2m1!1squadra+tenis+parque+da+cidade!3m6!1s0x935a300aea728e71:0xc1ab28f3bf990278!8m2!3d-15.8094744!4d-47.9232813!15sCh1xdWFkcmEgdGVuaXMgcGFycXVlIGRhIGNpZGFkZVofIh1xdWFkcmEgdGVuaXMgcGFycXVlIGRhIGNpZGFkZZIBDHRlbm5pc19jb3VydJoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VOaGNrbGlOVGxSUlJBQqoBWBABKhAiDHF1YWRyYSB0ZW5pcygMMh8QASIbrtbXIUG1t0iJ5KScOxbeJ6Cr6H-ti58VegnDMiEQAiIdcXVhZHJhIHRlbmlzIHBhcnF1ZSBkYSBjaWRhZGXgAQD6AQQIABAm!16s%2Fg%2F11g5_g1749?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+
+    
+  </div>
+
+  <div class="quadra">
+    <img src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4noA-83VHeKAB0aROvsRx5GzlqYDDzT72VyKm7U5Lf3bBhJSO1i-98b9smLKCHNwoAwZsNUfjSY3kojY3ak2c-BHVtY6bqwBf0GzHFNkQlY3pFsjaTifkMH-acJvlhAq964WUjSDzQ=s680-w680-h510-rw" alt="Quadra 202 Sul - Asa Sul">
+    <div class="quadra-info">
+      <h3>Quadra 202 Sul - Asa Sul</h3>
+      <p><strong>Endereço:</strong> Asa Sul SQS 202 - Asa Sul, Brasília - DF, 70232-000</p>
+      <p><strong>Conservação:</strong> Ótima</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Quadra+de+T%C3%AAnis+202+Sul/@-15.8065819,-47.8891337,1055m/data=!3m1!1e3!4m14!1m7!3m6!1s0x935a3b007e63f073:0xb3e794e72c9a27da!2sQuadra+de+T%C3%AAnis+202+Sul!8m2!3d-15.8065871!4d-47.8865588!16s%2Fg%2F11w7d0313d!3m5!1s0x935a3b007e63f073:0xb3e794e72c9a27da!8m2!3d-15.8065871!4d-47.8865588!16s%2Fg%2F11w7d0313d?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+  </div>
+
+  <div class="quadra">
+    <img src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqlsmRm11mGxrVWajpU22eBYNgL2aGFlBDSZm39-56nzPnl9kbDcKCXpV91UgHzr_-pSdKRT-bjfHUHaOXe0dY67r7FcznGZQ9P2yjW80YUS51GuCE3tdH1iS1QGytpAzs31bXkCw=s680-w680-h510-rw" alt="Quadra asa sul">
+    <div class="quadra-info">
+      <h3>Parque Maria Cláudia del' Isola 112/113 sul</h3>
+      <p><strong>Endereço:</strong>SHCS SQS 113 - Asa Sul, Brasília - DF, 70376-000</p>
+      <p><strong>Conservação:</strong> Boa</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Parque+Maria+Cl%C3%A1udia+del'+Isola+112%2F113+sul/@-15.825594,-47.918175,1055m/data=!3m1!1e3!4m14!1m7!3m6!1s0x935a25e2be20f2bd:0x7430b266c1e3a40e!2sParque+Maria+Cl%C3%A1udia+del'+Isola+112%2F113+sul!8m2!3d-15.8255992!4d-47.9156001!16s%2Fg%2F11j744g0hg!3m5!1s0x935a25e2be20f2bd:0x7430b266c1e3a40e!8m2!3d-15.8255992!4d-47.9156001!16s%2Fg%2F11j744g0hg?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+  </div>
+
+
+  <div class="quadra">
+    <img src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4nrFTYC78LoWI8IAI8V2xlKh0rYGi4C-UM7pYnGagflvNj3JdTf3N9DgpHRio1RPm8Z-Tqv3HA86g6IOAJBCnM94mmCgZPcDSsbRy_U6VxYT2GRX-ga1bDAvJN1zK74a_25atw1X=s680-w680-h510-rw" alt="Conjunto Esportivo Metropolitana">
+    <div class="quadra-info">
+      <h3>Conjunto Esportivo Metropolitana</h3>
+      <p><strong>Endereço:</strong> Park Way Trecho 2 Q 6 - Núcleo Bandeirante, Brasília - DF, 71740-600</p>
+      <p><strong>Conservação:</strong> Ótima, mas aparentemente não possui rede.</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/place/Conjunto+Esportivo+Metropolitana/@-15.8831074,-47.9684996,1055m/data=!3m1!1e3!4m14!1m7!3m6!1s0x935a2efcbda77c41:0xc1fbf441f8fa42dc!2sConjunto+Esportivo+Metropolitana!8m2!3d-15.8831126!4d-47.9659247!16s%2Fg%2F11b7kkd2qt!3m5!1s0x935a2efcbda77c41:0xc1fbf441f8fa42dc!8m2!3d-15.8831126!4d-47.9659247!16s%2Fg%2F11b7kkd2qt?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+    </div>
+  </div>
+
+  <div class="quadra">
+    <img src="https://i.ytimg.com/vi/Z2o_x9Nega0/maxresdefault.jpg" alt="Parque Sul - Águas Claras">
+    <div class="quadra-info">
+      <h3>Parque Sul - Águas Claras</h3>
+      <p><strong>Endereço:</strong> R. Arariba - Águas Claras, Brasília - DF, 71928-720</p>
+      <p><strong>Conservação:</strong> Ótima</p>
+      <p><strong>Tpo de Quadra:</strong> Rápida</p>
+      <a href="https://www.google.com/maps/search/-15.845129,+-48.030114?coh=245189&entry=tts&g_ep=EgoyMDI1MDUxNS4xIPu8ASoJLDEwMjExNDU1SAFQAw%3D%3D&skid=19bc45dd-1cdc-404a-92b8-f3d59fd49a64" target="_blank">Ver no Google Maps</a>
+    </div>
+    </div>
+
+    <div class="quadra">
+        <img src="https://i.imgur.com/VOJfkTW.png" alt="Quadra Riacho Fundo 2">
+        <div class="quadra-info">
+          <h3>Quadra Riacho Fundo 2</h3>
+          <p><strong>Endereço:</strong>Riacho Fundo II-2A Etapa QC 5 - Riacho Fundo II, Brasília - DF, 71705-500</p>
+          <p><strong>Conservação:</strong> Ótima</p>
+          <p><strong>Tpo de Quadra:</strong> Rápida</p>
+          <a href="https://www.google.com/maps/search/-15.921703,+-48.045745?coh=245189&entry=tts&g_ep=EgoyMDI1MDUxNS4xIPu8ASoJLDEwMjExNDU1SAFQAw%3D%3D&skid=77b81c9e-f4b9-4482-9638-c0460163093f" target="_blank">Ver no Google Maps</a>
+        </div>
+    </div>
+
+    <div class="quadra">
+        <img src="https://i.imgur.com/iSQB4wP.png" alt="Quadra Santa Maria">
+        <div class="quadra-info">
+          <h3>Quadra Santa Maria</h3>
+          <p><strong>Endereço:</strong>QR 116 - Santa Maria, Brasília - DF, 72546-200</p>
+          <p><strong>Conservação:</strong> Boa</p>
+          <p><strong>Tpo de Quadra:</strong> Rápida</p>
+          <a href="https://www.google.com/maps/place/Arena+T%C3%AAnis+Santa+DF/@-16.0044722,-47.999444,527m/data=!3m1!1e3!4m10!1m2!2m1!1squadra+tenis+santa+maria!3m6!1s0x935987005511d64d:0xa4a827ebf02f10b7!8m2!3d-16.0027926!4d-47.995608!15sChhxdWFkcmEgdGVuaXMgc2FudGEgbWFyaWFaGiIYcXVhZHJhIHRlbmlzIHNhbnRhIG1hcmlhkgEMdGVubmlzX2NvdXJ0mgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVU5NWDNNMldIbFJSUkFCqgFUEAEqECIMcXVhZHJhIHRlbmlzKAwyIBABIhyu1tuBDiww8zfsTzkJp-Vo64h1LAohTouAKlIiMhwQAiIYcXVhZHJhIHRlbmlzIHNhbnRhIG1hcmlh4AEA-gEECAAQKA!16s%2Fg%2F11w1k5jy7p?entry=ttu&g_ep=EgoyMDI1MDUxNS4xIKXMDSoJLDEwMjExNDU1SAFQAw%3D%3D" target="_blank">Ver no Google Maps</a>
+        </div>
+    </div>
+
+
+
+
+    
+</section>
+
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Inicializa o mapa centrado em Brasília
+  var map = L.map('map').setView([-15.7942, -47.8822], 12);
+
+  // Camada do mapa (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Lista de quadras para os marcadores no mapa
+  // ATENÇÃO: Atualize aqui as coordenadas (latitude, longitude) e o nome conforme suas quadras da lista acima
+  const quadras = [
+    {
+      nome: "Parque Burle Marx - Noroeste",
+      coords: [-15.753406219522782, -47.90762619668578],
+      endereco: "Noroeste W7, Brasília - DF"
+    },
+    {
+      nome: "Praça do Tenista - Lago Sul",
+      coords: [-15.844127917952498, -47.87783785755658],
+      endereco: "St. de Habitações Individuais Sul QI 13 Ae - Lago Sul, Brasília - DF"
+    },
+    {
+      nome: "Parque da cidade - Brasília",
+      coords: [-15.809456508745747, -47.923274950224155],
+      endereco: "Srps - Brasília, DF, 70655-775"
+    },
+    {
+        nome:"Quadra 202 Sul - Asa sul",
+        coords: [-15.806556735775212, -47.88658134415006],
+        endereco:"Asa Sul SQS 202 - Asa Sul, Brasília - DF"
+    },
+    {
+        nome:"Conjunto Esportivo Metropolitana",
+        coords: [-15.883064681144049, -47.96592203979126],
+        endereco:"Park Way Trecho 2 Q 6 - Núcleo Bandeirante, Brasília - DF, 71740-600"
+    },
+    {
+        nome:"Parque Sul - Águas Claras",
+        coords: [-15.845146769972924, -48.03020235358156],
+        endereco:"R. Arariba - Águas Claras, Brasília - DF, 71928-720"
+    },
+    {
+        nome:"Quadra Riacho Fundo 2",
+        coords: [-15.921736542090988, -48.045717404386224],
+        endereco:"Riacho Fundo II-2A Etapa QC 5 - Riacho Fundo II, Brasília - DF, 71705-500"
+    },
+    {
+        nome:"Quadra Santa Maria",
+        coords: [-16.002819034395102, -47.99561484861],
+        endereco:"QR 116 - Santa Maria, Brasília - DF, 72546-400"
+    },
+    {
+        nome:"Quadra de Tênis Lago Sul - EQL 6/8",
+        coords: [-15.841666450215483, -47.89523209661288],
+        endereco:"St. de Habitações Individuais Sul QI 8 - Lago Sul, Brasília - DF, 70200-001"
+    },
+    {
+        nome:"Parque Maria Cláudia del' Isola 112/113 sul",
+        coords: [-15.825686726563097, -47.915484154414884],
+        endereco:"0, SHCS SQS 113 - Asa Sul, Brasília - DF, 70376-000"
+    },
+    
+    
+  ];
+
+  // Adiciona marcadores no mapa com popup
+  quadras.forEach(q => {
+    L.marker(q.coords).addTo(map)
+      .bindPopup(`<strong>${q.nome}</strong><br>${q.endereco}`);
+  });
+</script>
+
+</body>
+</html>
++
